@@ -25,8 +25,8 @@ public class Feature
 
     public string AdminComments { get; set; } = null!;
 
-    [Column("UserID")]
-    public int UserId { get; set; }
+    [Column("UserName")]
+    public string UserName { get; set; }
 
     public string EntityName { get; set; } = null!;
 

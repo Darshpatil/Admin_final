@@ -145,7 +145,7 @@ namespace Admin.Controllers
 
                 //_db.SaveChanges();
 
-                TempData["success"] = "Comment updated successfully";
+                TempData["error"] = "Comment updated successfully";
 
                 return Ok("Comment updated successfully");
             }
@@ -179,6 +179,7 @@ namespace Admin.Controllers
 
                                 // Assuming your Azure Function URL and payload format
                                 var functionUrl = "https://meshapp.azurewebsites.net";
+
 
                                 using (var client = new HttpClient())
                                 {
@@ -221,7 +222,7 @@ namespace Admin.Controllers
 
                 // Save changes to the database
                 _db.SaveChanges();
-
+                TempData["error"] = "Comment updated successfully";
                 return Ok("All changes applied successfully");
             }
             catch (Exception ex)
@@ -367,6 +368,31 @@ namespace Admin.Controllers
                 return BadRequest($"Error marking feature for rejection: {ex.Message}");
             }
         }
+
+
+
+
+
+        [HttpGet]
+        public IActionResult CommentBox(int featureId)
+        {
+            // Assuming _db is your database context and Feature is your model
+            var feature = _db.Features.FirstOrDefault(f => f.FeatureId == featureId);
+
+            if (feature == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_CommentBoxPatial", feature);
+            
+        }
+
+
+
+
+
+
     }
 }
     

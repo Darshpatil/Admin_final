@@ -4,8 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/Bootswatch.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="~/Admin.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -13,10 +12,10 @@
 <body>
     <header>
 
-        <nav class="navbar navbar-expand-lg bg-light" data-bs-theme="light">
+        <nav class="navbar navbar-expand-lg bg-light  " data-bs-theme="light">
             <div class="container-fluid">
 
-                <a class="navbar-brand" href="Index">Feature Mesh Software System </a>
+                <a class="navbar-brand text-dark" href="Index">Admin page </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03" aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -24,10 +23,10 @@
                     <ul class="navbar-nav me-auto">
                        
                     </ul>
-                    <form id="searchForm" asp-controller="AdminM" asp-action="SearchFeatures" method="post">
+                    @* <form id="searchForm" asp-controller="AdminM" asp-action="SearchFeatures" method="post">
                         <input type="text" id="searchInput" name="searchTerm" placeholder="Enter search term" />
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchBtn">Search</button>
-                    </form>
+                    </form> *@
                     
                 </div>
             </div>
@@ -37,6 +36,7 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            @* <partial name="_Notification"/> *@
             @RenderBody() <!-- This is where the content of your specific view will be rendered -->
         </main>
     </div>
@@ -45,6 +45,9 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
+
 </html>

@@ -260,38 +260,54 @@ function addChange(featureId, action, comment = '') {
 
 
 
+
+
+
+
 function saveComment(featureId) {
-    var featureId = document.getElementById("hiddenFeatureId").value;
-    var comment = document.getElementById("commentTextArea").value;
-    console.log(comment + "wed");
-    var confirmation = window.confirm("Are you sure you want to add this comment?");
-    if (confirmation) {
+    var commentTextArea = document.getElementById(`commentTextArea_${featureId}`);
+    var comment = commentTextArea.value.trim();
+    console.log('Feature ID:', featureId);
 
+    // Show SweetAlert2 confirmation dialog
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to add comment?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, add comment!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // User clicked "Yes"
 
-
-        fetch(`/AdminM/UpdateComment?featureId=${featureId}&comment=${comment}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-
-            .then(response => {
-                if (response.ok) {
-                    // console.log('Comment accepted successfully');
-                    addChange(featureId, 'Comment', comment);
-                    $('#commentModal').modal('hide');
-                } else {
-                    console.error('Failed to Comment feature');
+            console.log(featureId);
+            fetch(`/AdminM/UpdateComment?featureId=${featureId}&comment=${encodeURIComponent(comment)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-
-
-
-    }
+                .then(response => {
+                    if (response.ok) {
+                        // Comment accepted successfully
+                        addChange(featureId, 'Comment', comment);
+                        $('#commentModal').modal('hide');
+                        Swal.fire({
+                            title: "Comment Added!",
+                            text: "Your comment has been added.",
+                            icon: "success"
+                        });
+                    } else {
+                        console.error('Failed to comment feature');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    });
 }
 
 
@@ -307,88 +323,182 @@ function saveComment(featureId) {
 
 
 
+
+//function acceptFeature(featureId) {
+//    var acceptButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="acceptFeature"]`);
+//    var rejectButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="rejectFeature"]`);
+
+//    var confirmation = window.confirm("Are you sure you want to accept the feature?");
+//    if (confirmation) {
+//        if (acceptButton && acceptButton.innerText !== 'Approved') {
+//            acceptButton.innerText = 'Approved';
+//            acceptButton.classList.add('btn-success');
+//            acceptButton.classList.remove('btn-primary');
+//        }
+
+//        if (rejectButton && rejectButton.innerText !== 'Reject') {
+//            rejectButton.innerText = 'Reject';
+//            rejectButton.classList.remove('d-none');
+//            rejectButton.classList.remove('btn-danger');
+//            rejectButton.classList.add('btn-primary');
+//        }
+
+//        fetch(`/AdminM/AcceptFeature?featureId=${featureId}`, {
+//            method: 'POST',
+//            headers: {
+//                'Content-Type': 'application/json'
+//            }
+//        })
+//            .then(response => {
+//                if (response.ok) {
+//                    console.log('Feature accepted successfully');
+//                    addChange(featureId, 'Accept');
+//                } else {
+//                    console.error('Failed to accept feature');
+//                }
+//            })
+//            .catch(error => {
+//                console.error('Error:', error);
+//            });
+//    }
+//}
+
+//function rejectFeature(featureId) {
+//    var acceptButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="acceptFeature"]`);
+//    var rejectButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="rejectFeature"]`);
+
+//    console.log("else if reject");
+//    var confirmation = window.confirm("Are you sure you want to reject the feature?");
+
+//    if (confirmation) {
+//        if (rejectButton && rejectButton.innerText !== 'Rejected') {
+//            rejectButton.innerText = 'Rejected';
+//            rejectButton.classList.add('btn-danger');
+//            rejectButton.classList.remove('btn-primary');
+//            //act = "Reject";
+//        }
+
+//        if (acceptButton && acceptButton.innerText !== 'Accept') {
+//            acceptButton.innerText = 'Accept';
+//            acceptButton.classList.remove('btn-success');
+//            acceptButton.classList.add('btn-primary');
+//        }
+
+
+//        fetch(`/AdminM/RejectFeature?featureId=${featureId}`, {
+//            method: 'POST',
+//            headers: {
+//                'Content-Type': 'application/json'
+//            }
+//        })
+//            .then(response => {
+//                if (response.ok) {
+//                    console.log('Feature rejected successfully');
+//                    addChange(featureId, 'Reject');
+//                    act = null;
+//                } else {
+//                    console.error('Failed to reject feature');
+//                }
+//            })
+//            .catch(error => {
+//                console.error('Error:', error);
+//            });
+//    }
+//}
 function acceptFeature(featureId) {
     var acceptButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="acceptFeature"]`);
     var rejectButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="rejectFeature"]`);
 
-    var confirmation = window.confirm("Are you sure you want to accept the feature?");
-    if (confirmation) {
-        if (acceptButton && acceptButton.innerText !== 'Approved') {
-            acceptButton.innerText = 'Approved';
-            acceptButton.classList.add('btn-success');
-            acceptButton.classList.remove('btn-primary');
-        }
-
-        if (rejectButton && rejectButton.innerText !== 'Reject') {
-            rejectButton.innerText = 'Reject';
-            rejectButton.classList.remove('d-none');
-            rejectButton.classList.remove('btn-danger');
-            rejectButton.classList.add('btn-primary');
-        }
-
-        fetch(`/AdminM/AcceptFeature?featureId=${featureId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to accept the feature?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#28a745", // green color for the confirm button
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, accept it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (acceptButton && acceptButton.innerText !== 'Approved') {
+                acceptButton.innerText = 'Approved';
+                acceptButton.classList.add('btn-success');
+                acceptButton.classList.remove('btn-primary');
             }
-        })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Feature accepted successfully');
-                    addChange(featureId, 'Accept');
-                } else {
-                    console.error('Failed to accept feature');
+
+            if (rejectButton && rejectButton.innerText !== 'Reject') {
+                rejectButton.innerText = 'Reject';
+                rejectButton.classList.remove('d-none');
+                rejectButton.classList.remove('btn-danger');
+                rejectButton.classList.add('btn-primary');
+            }
+
+            fetch(`/AdminM/AcceptFeature?featureId=${featureId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Feature accepted successfully');
+                        addChange(featureId, 'Accept');
+                    } else {
+                        console.error('Failed to accept feature');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    });
 }
 
 function rejectFeature(featureId) {
     var acceptButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="acceptFeature"]`);
     var rejectButton = document.querySelector(`button[data-feature-id="${featureId}"][onclick^="rejectFeature"]`);
 
-    console.log("else if reject");
-    var confirmation = window.confirm("Are you sure you want to reject the feature?");
-
-    if (confirmation) {
-        if (rejectButton && rejectButton.innerText !== 'Rejected') {
-            rejectButton.innerText = 'Rejected';
-            rejectButton.classList.add('btn-danger');
-            rejectButton.classList.remove('btn-primary');
-            //act = "Reject";
-        }
-
-        if (acceptButton && acceptButton.innerText !== 'Accept') {
-            acceptButton.innerText = 'Accept';
-            acceptButton.classList.remove('btn-success');
-            acceptButton.classList.add('btn-primary');
-        }
-
-
-        fetch(`/AdminM/RejectFeature?featureId=${featureId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You want to reject the feature?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, reject it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (rejectButton && rejectButton.innerText !== 'Rejected') {
+                rejectButton.innerText = 'Rejected';
+                rejectButton.classList.add('btn-danger');
+                rejectButton.classList.remove('btn-primary');
             }
-        })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Feature rejected successfully');
-                    addChange(featureId, 'Reject');
-                    act = null;
-                } else {
-                    console.error('Failed to reject feature');
+
+            if (acceptButton && acceptButton.innerText !== 'Accept') {
+                acceptButton.innerText = 'Accept';
+                acceptButton.classList.remove('btn-success');
+                acceptButton.classList.add('btn-primary');
+            }
+
+            fetch(`/AdminM/RejectFeature?featureId=${featureId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Feature rejected successfully');
+                        addChange(featureId, 'Reject');
+                    } else {
+                        console.error('Failed to reject feature');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    });
 }
-
 
 
 
@@ -434,7 +544,20 @@ function updateAllChanges() {
                 // Handle success, e.g., clear changes or update UI to reflect changes
                 pendingChanges = []; // Clear changes after successful update
                 $('#previewModal').modal('hide'); // Close the modal
-                location.reload(); // Refresh the UI or handle as needed
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'All changes have been successfully updated.',
+                    icon: 'success',
+                    timer: 2000, // Show for 2 seconds
+                    showConfirmButton: false
+                }).then(() => {
+                    // After the timer finishes, reload the page
+                    location.reload();
+                });
+
+               
+
+                
             })
             .catch(error => {
                 // Handle errors
@@ -461,6 +584,7 @@ function updateAllChanges() {
                 }
                 // Optional: Handle UI update or other tasks after clearing
                 console.log('Pending changes cleared successfully');
+
             })
             .catch(error => {
                 // Handle errors
@@ -513,28 +637,171 @@ function closeCommentBox() {
 }
 
 
-function downloadTableAsPDF() {
-    const element = document.getElementById('featuresTable');
+//function downloadTableAsPDF() {
+//    const element = document.getElementById('featuresTable');
 
-    // Clone the table element to avoid modifying the original
-    const clonedTable = element.cloneNode(true);
+//    // Clone the table element to avoid modifying the original
+//    const clonedTable = element.cloneNode(true);
 
-    // Iterate over each row and remove the fifth and sixth columns
-    clonedTable.querySelectorAll('tr').forEach(row => {
-        row.removeChild(row.cells[5]); // Remove the fifth column (index 4)
-        row.removeChild(row.cells[5]); // Remove the sixth column (index 4 again, as the previous removal shifted the indices)
-    });
+//    // Iterate over each row and remove the fifth and sixth columns
+//    clonedTable.querySelectorAll('tr').forEach(row => {
+//        row.removeChild(row.cells[5]); // Remove the fifth column (index 4)
+//        row.removeChild(row.cells[5]); // Remove the sixth column (index 4 again, as the previous removal shifted the indices)
+//    });
 
-    // Specify options for html2pdf
-    const options = {
-        margin: 10,
-        filename: 'features_table.pdf', // Default filename
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    };
+//    // Specify options for html2pdf
+//    const options = {
+//        margin: 10,
+//        filename: 'features_table.pdf', // Default filename
+//        image: { type: 'jpeg', quality: 0.98 },
+//        html2canvas: { scale: 2 },
+//        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+//    };
 
-    // Use html2pdf.js to generate the PDF and trigger the save dialog
-    html2pdf(clonedTable, { ...options, output: 'save' });
+//    // Use html2pdf.js to generate the PDF and trigger the save dialog
+//    html2pdf(clonedTable, { ...options, output: 'save' });
 
-}
+//}
+
+
+//function previewTableAsPDF() {
+//    const element = document.getElementById('featuresTable');
+
+//    // Clone the table element to avoid modifying the original
+//    const clonedTable = element.cloneNode(true);
+
+//    // Iterate over each row and remove the fifth and sixth columns
+//    clonedTable.querySelectorAll('tr').forEach(row => {
+//        row.removeChild(row.cells[5]); // Remove the fifth column (index 4)
+//        row.removeChild(row.cells[5]); // Remove the sixth column (index 4 again, as the previous removal shifted the indices)
+//    });
+
+//    // Show a download button with Bootstrap classes
+//    const downloadButton = document.createElement('button');
+//    downloadButton.textContent = 'Download PDF';
+//    downloadButton.className = 'btn btn-primary'; // Add Bootstrap classes
+//    downloadButton.style.marginTop = '10px';
+//    downloadButton.addEventListener('click', () => {
+//        // Create a container for the preview and download button
+//        const previewContainer = document.createElement('div');
+//        previewContainer.style.textAlign = 'center';
+//        previewContainer.style.marginTop = '20px';
+
+//        // Add text at the top
+//        const textElement = document.createElement('div');
+//        textElement.textContent = 'Previewing Table';
+//        textElement.style.fontWeight = 'bold';
+//        textElement.style.marginBottom = '10px';
+//        previewContainer.appendChild(textElement);
+
+//        // Append the cloned table to the preview container
+//        previewContainer.appendChild(clonedTable);
+
+//        // Show a download button with Bootstrap classes in the preview container
+//        const downloadButtonInPreview = document.createElement('button');
+//        downloadButtonInPreview.textContent = 'Download PDF';
+//        downloadButtonInPreview.className = 'btn btn-primary'; // Add Bootstrap classes
+//        downloadButtonInPreview.style.marginTop = '10px';
+//        downloadButtonInPreview.addEventListener('click', () => {
+//            // Specify options for html2pdf
+//            const options = {
+//                margin: 10,
+//                filename: 'features_table.pdf', // Default filename
+//                image: { type: 'jpeg', quality: 0.98 },
+//                html2canvas: { scale: 2 },
+//                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+//            };
+
+//            // Use html2pdf.js to generate the PDF and trigger the save dialog
+//            html2pdf(clonedTable, { ...options, output: 'save' });
+
+//            // Remove the preview container after download
+//            document.body.removeChild(previewContainer);
+//        });
+
+//        // Append the download button to the preview container
+//        previewContainer.appendChild(downloadButtonInPreview);
+
+//        // Append the preview container to the body
+//        document.body.appendChild(previewContainer);
+//    });
+
+//    // Append the download button to the body or a specific element in your HTML
+//    document.body.appendChild(downloadButton);
+//}
+
+// Call this function when you want to preview the table and download the PDF
+//previewTableAsPDF();
+
+
+//function previewTableAsPDF() {
+//    const element = document.getElementById('featuresTable');
+
+//    // Clone the table element to avoid modifying the original
+//    const clonedTable = element.cloneNode(true);
+
+//    // Iterate over each row and remove the fifth and sixth columns
+//    clonedTable.querySelectorAll('tr').forEach(row => {
+//        row.removeChild(row.cells[5]); // Remove the fifth column (index 4)
+//        row.removeChild(row.cells[5]); // Remove the sixth column (index 4 again, as the previous removal shifted the indices)
+//    });
+
+//    // Create a print button
+//    const printButton = document.createElement('button');
+//    printButton.textContent = 'Print Preview';
+//    printButton.className = 'btn btn-primary'; // Add Bootstrap classes
+//    printButton.style.marginTop = '10px';
+//    printButton.addEventListener('click', () => {
+//        // Open the browser's print preview
+//        window.print();
+//    });
+
+//    // Append the cloned table and print button to a container
+//    const container = document.createElement('div');
+//    //container.appendChild(clonedTable);
+//    container.appendChild(printButton);
+
+//    // Append the container to the body
+//    document.body.appendChild(container);
+//}
+
+//function printTable() {
+//    const element = document.getElementById('featuresTable');
+
+//    // Clone the entire document
+//    const clonedDocument = document.cloneNode(true);
+
+//    // Find the table in the cloned document
+//    const clonedTable = clonedDocument.getElementById('featuresTable');
+
+//    // Ensure the table exists in the cloned document
+//    if (clonedTable) {
+//        // Remove the fifth and sixth columns in the cloned table
+//        clonedTable.querySelectorAll('tr').forEach(row => {
+//            row.removeChild(row.cells[5]); // Remove the fifth column (index 4)
+//            row.removeChild(row.cells[5]); // Remove the sixth column (index 4 again, as the previous removal shifted the indices)
+//        });
+
+//        // Hide unwanted elements for printing
+//        const style = document.createElement('style');
+//        style.textContent = `
+//            @media print {
+//                body * {
+//                    visibility: hidden;
+//                }
+//                #featuresTable, #featuresTable * {
+//                    visibility: visible;
+//                }
+//            }
+//        `;
+//        clonedDocument.head.appendChild(style);
+
+//        // Open a new window with the modified table for printing
+//        const printWindow = window.open('', '_blank');
+//        printWindow.document.write(clonedDocument.documentElement.outerHTML);
+//        printWindow.document.close();
+
+//        // Trigger the print dialog in the new window
+//        printWindow.print();
+//    }
+//}

@@ -11,27 +11,58 @@
 }
 <style>
 
+    .element-with-scroll {
+        overflow-y: scroll;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
 
+        .element-with-scroll::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+
+/* 
     .split-view {
         display: flex;
         justify-content: space-between;
+    } */
+
+
+
+    .feature-row {
+        /* Your styles for individual feature rows */
+        /* Example: */
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
     }
+
+
 
     .features-section {
-        flex: 1;
+        flex: 10; /* 80% width */
         padding: 20px;
-        width: 70%;
+        width: 100%;
+        height: 1000px; /* Sample height */
+        transition: transform 0.5s ease; /* Adding a transition effect */
+        /* Add vertical scrollbar if needed */
     }
 
-    .feature-details-section {
+    /* .feature-details-section {
         flex-basis: 30%;
         padding: 20px;
         border-left: 1px solid #ccc;
         overflow-y: auto; /* Add scroll for overflow content */
+    } */
+
+
+    .comment-box {
+        border-top: 1px solid #ccc;
+        width: 100px; /* Adjust width as needed */
+        margin-top: -1px; /* Adjust margin as needed to align properly with preview-pane */
+        float:right;
+       
     }
-
-
-    
 
     .feature-details-popup {
         display: none;
@@ -56,8 +87,6 @@
     @@media (max-width: 576px) {
         .remove-left-padding {
             padding-left: 0;
-            margin-left: 0;
-            margin-right: 0;
             margin-bottom: 0;
         }
 
@@ -71,82 +100,194 @@
             font-size: 0.8rem;
         }
 
-        .table th, .table td {
-            padding: 0.3rem;
+        .table-responsive {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+            .table-responsive table {
+                margin-bottom: 0;
+            }
+
+                .table-responsive table thead th,
+                .table-responsive table tbody td {
+                    padding: 8px;
+                    font-size: 12px; 
+                }
+
+        .card-body {
+            padding: 0; 
+        }
+
+        .search-container {
+            margin-bottom: 10px; 
+        }
+
+        .search-bar {
+            margin-bottom: 10px; 
         }
     }
 
 
     .preview-pane {
-        width: 28%; /* Adjust as needed */
-        border: 1px solid #ccc; /* Border color */
-        background-color: #f8f9fa; /* Background color */
-        padding: 10px; /* Padding for content */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
-        height:30%;
-     
-     
+        /* Your styles for the preview pane */
+        position: fixed;
+        top: 50px; /* Adjust as needed */
+        right: 20px; /* Adjust as needed */
+        width: 300px; /* Adjust width as needed */
+        height: 65%; /* Adjust height as needed */
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        padding: 10px;
+        overflow-y: auto; /* Enable vertical scroll if needed */
+        display: none; /* Initially hide the preview pane */
+        overflow: hidden;
     }
 
 
+    .details-and-comment {
+        position: fixed;
+        top: 71%;
+        left: 81%;
+        display: flex;
+        flex-direction: column;
+        width: 300px; /* Adjust width according to the preview pane and comment box width */
+        padding: 0; /* Reset padding */
+        margin: 0; /* Reset margin */
+        float: right;
+    }
+
 
     .feature-row:hover {
-
         background-color: #f8f9fa;
-        
-        /* Lighter background color on hover */ 
+        /* Lighter background color on hover */
         color: #007bff; /* Change text color on hover */
-        transform: scale(1.02); /* Add a slight scale effect on hover */
+        transform: scale(1.002); /* Add a slight scale effect on hover */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow on hover */
         transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s; /* Add smooth transition */
     }
 </style>
 <script src="~/Admin.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-
-<!-- Include html2pdf.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 
 <script>
 
-  function loadFeatureDetails(featureId) {
-    // Get the preview pane element
-    const previewPane = document.getElementById('featurePreviewPane');
 
-    // Check if the preview pane is currently visible
-    const isVisible = window.getComputedStyle(previewPane).display !== 'none';
 
-    // If visible, hide the preview pane
-    if (isVisible) {
-        previewPane.style.display = 'none';
-    } else {
-        // If not visible, fetch and show the feature details
+
+
+
+
+
+
+    function loadFeatureDetails(featureId) {
+        const previewPane = document.getElementById('featurePreviewPane');
+        const commentBoxContainer = document.getElementById('commentBoxContainer');
+        var section = document.querySelector('.features-section');
+        section.style.transform = 'translateX(-10%)'; // Move the section to the
+        // Function to load comment box content
+        function loadCommentBox(featureId) {
+            fetch(`/AdminM/CommentBox?featureId=${featureId}`)
+                .then(response => response.text())
+                .then(commentBoxData => {
+                    commentBoxContainer.innerHTML = commentBoxData;
+                    commentBoxContainer.style.display = 'block'; // Display the comment box after loading its content
+
+                    // Optionally show the comment box if needed based on your UI logic
+                })
+                .catch(error => {
+                    console.error('There was a problem loading the comment box:', error);
+                });
+        }
+
+        // Load feature details
         fetch(`/AdminM/FeatureDetails?featureId=${featureId}`)
             .then(response => response.text())
-            .then(data => {
-                // Update the content of the preview pane
-                previewPane.innerHTML = data;
-
-                // Show the preview pane
+            .then(featureData => {
+                previewPane.innerHTML = featureData;
                 previewPane.style.display = 'block';
+
+                // Load the comment box after loading the feature details
+                loadCommentBox(featureId);
             })
             .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
+                console.error('There was a problem loading the feature details:', error);
             });
     }
-}
 
 
-    // Update the function that handles feature clicks to load details in the right section
-    function openFeatureDetails(featureId) {
-        // Highlight the selected feature if needed
-        // Optionally, you can add a CSS class to highlight the selected feature in the features list
-        // Example: $(`.feature-row[data-feature-id="${featureId}"]`).addClass('selected');
+    function closeCommentBox() {
+        const commentBoxContainer = document.getElementById('commentBoxContainer');
+        const featurePreviewPane = document.getElementById('featurePreviewPane');
+        var section = document.querySelector('.features-section');
+        // Hide the comment box container and feature preview pane
+        if (commentBoxContainer) {
+            commentBoxContainer.style.display = 'none';
+        }
+        if (featurePreviewPane) {
+            featurePreviewPane.style.display = 'none';
 
-        // Load feature details in the right section
-        loadFeatureDetails(featureId);
+            section.style.transform = 'translateX(0%)';
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //   function loadFeatureDetails(featureId) {
+    //     // Get the preview pane element
+    //     const previewPane = document.getElementById('featurePreviewPane');
+
+    //     // Check if the preview pane is currently visible
+    //     const isVisible = window.getComputedStyle(previewPane).display !== 'none';
+
+    //     // If visible, hide the preview pane
+    //     if (isVisible) {
+    //         previewPane.style.display = 'none';
+    //     } else {
+    //         // If not visible, fetch and show the feature details
+    //         fetch(`/AdminM/FeatureDetails?featureId=${featureId}`)
+    //             .then(response => response.text())
+    //             .then(data => {
+    //                 // Update the content of the preview pane
+    //                 previewPane.innerHTML = data;
+
+    //                 // Show the preview pane
+    //                 previewPane.style.display = 'block';
+    //             })
+    //             .catch(error => {
+    //                 console.error('There was a problem with the fetch operation:', error);
+    //             });
+    //     }
+    // }
+
+
+    //     // Update the function that handles feature clicks to load details in the right section
+    //     function openFeatureDetails(featureId) {
+    //         // Highlight the selected feature if needed
+    //         // Optionally, you can add a CSS class to highlight the selected feature in the features list
+    //         // Example: $(`.feature-row[data-feature-id="${featureId}"]`).addClass('selected');
+
+    //         // Load feature details in the right section
+    //         loadFeatureDetails(featureId);
+    //     }
 </script>
 
 <!-- Modal for displaying changes preview -->
@@ -258,7 +399,7 @@
 
 
 <input type="hidden" id="hiddenFeatureId" />
-
+@*
 <div class="container p-3 scrollable-table">
     <div class="row pt-4">
         <div class="col-4">
@@ -268,144 +409,327 @@
             <button type="button" class="btn btn-primary" onclick="updateAllChanges()">Update All</button>
         </div>
         <div class="col-4 text-end">
-            <button type="button" class="btn btn-primary float-right" onclick="downloadTableAsPDF()">Download PDF</button>
+            <button type="button" class="btn btn-primary float-right" onclick="printTable()">
+                Download PDF
+            </button> *@
+@*   <button id="externalPrintButton" class="btn btn-primary float-right">Print DataTable</button>
         </div>
 
         <br />
     </div>
     <br />
-</div>
+</div> *@
+
+@* <div class="row pt-1">
+    <div class="col-2">
+        <button type="button" class="btn btn-primary" onclick="updateAllChanges()">Update All</button>
+    </div>
+    <div class="col-1">
+        <button id="externalPrintButton" class="btn btn-primary">Print</button>
+    </div>
+</div> *@
+
+
+
+
+@* <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+ *@
+<!-- Font Awesome CSS (assuming you are using Font Awesome for icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+
+
+
+
+<!-- jQuery (adjust the version if needed) -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<!-- Bootstrap JS (adjust the version if needed) -->
+<script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+<!-- Buttons CSS and JS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.0.1/css/buttons.dataTables.min.css">
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.0.1/js/buttons.print.min.js"></script>
+
+
+
+<script>
+    // Initialize DataTables
+    var table;
+
+    jQuery(document).ready(function ($) {
+        table = $('#featuresTable').DataTable({
+            "pageLength": 100,
+            "ordering": true,
+            "responsive": true,
+            "dom": '<"top">rt<"bottom"ip>',
+            "buttons": [
+                {
+                    extend: 'print',
+                    text: '<button class="btn btn-primary">Print</button>',
+                    customize: function (win) {
+                        // Exclude columns from print view
+                        $(win.document.body).find('table thead tr th:nth-child(6), table thead tr th:nth-child(7), table tbody tr td:nth-child(6), table tbody tr td:nth-child(7)').remove();
+                    }
+                }
+            ],
+            // Add your other DataTables configurations here
+        });
+
+        $('#externalSearchBox').on('input', function () {
+            table.search(this.value).draw();
+        });
+
+        // Trigger DataTable print when external button is clicked
+        $('#externalPrintButton').on('click', function () {
+            table.button('.buttons-print').trigger();
+        });
+    });
+
+</script>
+
+
+
+
+
+
+
+
+
 
 
 <div class="split-view">
     <!-- Left section for Features -->
     <div class="features-section">
         @* <div id="featurePreviewPane">
-            <!-- Feature details will be displayed here -->
+        <!-- Feature details will be displayed here -->
         </div> *@
         @*   <div id="featuresContainer">
         <div class="container remove-left-padding">
         <div class="row">
         <div class="col-12"> *@
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-        <table class="table table-bordered table-striped text-center remove-left-padding" id="featuresTable">
-            <thead>
-                <tr>
-
-
-                    <th>
-                        Entity Name
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(0)">
-                            <i id="sortIcon0" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        Feature Id
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(1)">
-                            <i id="sortIcon1" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        Feature Name
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(2)">
-                            <i id="sortIcon2" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        Value
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(3)">
-                            <i id="sortIcon3" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        User Id
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(4)">
-                            <i id="sortIcon4" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        Approval status
-                        <button type="button" class="btn btn-sm" onclick="sortColumn(5)">
-                            <i id="sortIcon5" class="fas fa-sort"></i>
-                        </button>
-                    </th>
-                    <th>
-                        Comment
-
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-
-                @foreach (var obj in Model)
-                {
-                    <tr class="feature-row" data-feature-id="@obj.FeatureId">
-                        <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @if (obj.EntityName != null)
-                            {
-                                @obj.EntityName
-                            }
-                            else
-                            {
-                                <span>Entity Not Found</span>
-                            }
-                        </td>
-                        <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @obj.FeatureId
-                        </td>
-                        <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @obj.FeatureName
-                        </td>
-                        <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @obj.Value
-                        </td>
-                        <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @obj.UserId
-                        </td>
-                        <td width="20%" class="text-center">
-                            @if (obj.ApprovalStatus == 2)
-                            {
-                                <div class="col-12 text-center">
-                                    <button type="button" class="btn btn-success btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="acceptFeature(@obj.FeatureId)">Accept</button>
-                                    <button type="button" class="btn btn-danger btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="rejectFeature(@obj.FeatureId)">Reject</button>
-
+        <div class="card">
+            <div class="card-header text-center">
+                <h3>Feature List</h3>
+            </div>
+            @* <input type="text" id="externalSearchBox" placeholder="Search DataTable"> *@
+            <div class="card-body">
+                <div class="container">
+                    <div class="row pt-1">
+                        <div class="col-12 col-sm-8">
+                            <div class="input-group input-group-sm mb-3">
+                                <input type="text" class="form-control" id="externalSearchBox" placeholder="Search by any Column">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary " type="button" id="searchButton">Search</button>
                                 </div>
-                            }
-                            else if (obj.ApprovalStatus == 0)
+                            </div>
+                        </div>
+                        <div class="col-6 col-sm-2 text-center">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-block w-100 m-1" onclick="updateAllChanges()">Update All</button>
+                        </div>
+                        <div class="col-6 col-sm-2 text-center">
+                            <button id="externalPrintButton" class="btn btn-outline-primary btn-sm btn-block w-100 m-1">Print</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped text-center remove-left-padding" id="featuresTable">
+                        <thead>
+                            <tr>
+                                <th>Entity Name</th>
+                                <th class="d-none d-sm-table-cell">Feature Id </th>
+                                <th>Feature Name</th>
+                                <th class="d-none d-sm-table-cell">Value </th>
+                                <th class="d-none d-sm-table-cell">User Name </th>
+                                <th > Approval status </th>
+                              @*   <th class="d-none d-sm-table-cell">Comment</th> *@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var obj in Model)
                             {
-                                <span class="text-success">Approved</span>
+                                <tr class="feature-row" data-feature-id="@obj.FeatureId">
+                                    <td onclick="loadFeatureDetails(@obj.FeatureId)">
+                                        @if (obj.EntityName != null)
+                                        {
+                                            @obj.EntityName
+                                        }
+                                        else
+                                        {
+                                            <span>Entity Not Found</span>
+                                        }
+                                    </td>
+                                    <td class="d-none d-sm-table-cell" onclick="loadFeatureDetails(@obj.FeatureId)">
+                                        @obj.FeatureId
+                                    </td>
+                                    <td onclick="loadFeatureDetails(@obj.FeatureId)">
+                                        @obj.FeatureName
+                                    </td>
+                                    <td class="d-none d-sm-table-cell" onclick="loadFeatureDetails(@obj.FeatureId)">
+                                        @obj.Value
+                                    </td>
+                                    <td class="d-none d-sm-table-cell" onclick="loadFeatureDetails(@obj.FeatureId)">
+                                        @obj.UserName
+                                    </td>
+                                    <td width="20%" class="text-center">
+                                        @if (obj.ApprovalStatus == 2)
+                                        {
+                                            <div class="col-12 text-center">
+                                                <button type="button" class="btn btn-outline-primary btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="acceptFeature(@obj.FeatureId)">Accept</button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="rejectFeature(@obj.FeatureId)">Reject</button>
+                                            </div>
+                                        }
+                                        else if (obj.ApprovalStatus == 0)
+                                        {
+                                            <span class="text-success">Approved</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger" style="color: red;">Rejected</span>
+                                        }
+                                    </td>
+                                    @* <td class="d-none d-sm-table-cell">
+                                        <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
+                                    </td> *@
+                                </tr>
                             }
-                            else
-                            {
-                                <span class="text-danger" style="color: red;">Rejected</span>
-                            }
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
-                        </td>
-                    </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+        @*
+        <table class="table table-bordered table-striped text-center remove-left-padding" id="featuresTable">
+        <thead>
+        <tr>
+
+
+        <th>
+        Entity Name
+        <button type="button" class="btn btn-sm" onclick="sortColumn(0)">
+        <i id="sortIcon0" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        Feature Id
+        <button type="button" class="btn btn-sm" onclick="sortColumn(1)">
+        <i id="sortIcon1" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        Feature Name
+        <button type="button" class="btn btn-sm" onclick="sortColumn(2)">
+        <i id="sortIcon2" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        Value
+        <button type="button" class="btn btn-sm" onclick="sortColumn(3)">
+        <i id="sortIcon3" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        User Name
+        <button type="button" class="btn btn-sm" onclick="sortColumn(4)">
+        <i id="sortIcon4" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        Approval status
+        <button type="button" class="btn btn-sm" onclick="sortColumn(5)">
+        <i id="sortIcon5" class="fas fa-sort"></i>
+        </button>
+        </th>
+        <th>
+        Comment
+
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+
+        @foreach (var obj in Model)
+        {
+        <tr class="feature-row" data-feature-id="@obj.FeatureId">
+        <td onclick="loadFeatureDetails(@obj.FeatureId)">
+        @if (obj.EntityName != null)
+        {
+        @obj.EntityName
+        }
+        else
+        {
+        <span>Entity Not Found</span>
+        }
+        </td>
+        <td onclick="loadFeatureDetails(@obj.FeatureId)">
+        @obj.FeatureId
+        </td>
+        <td onclick="loadFeatureDetails(@obj.FeatureId)">
+        @obj.FeatureName
+        </td>
+        <td onclick="loadFeatureDetails(@obj.FeatureId)">
+        @obj.Value
+        </td>
+        <td onclick="loadFeatureDetails(@obj.FeatureId)">
+        @obj.UserName
+        </td>
+        <td width="20%" class="text-center">
+        @if (obj.ApprovalStatus == 2)
+        {
+        <div class="col-12 text-center">
+        <button type="button" class="btn btn-success btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="acceptFeature(@obj.FeatureId)">Accept</button>
+        <button type="button" class="btn btn-danger btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="rejectFeature(@obj.FeatureId)">Reject</button>
+
+        </div>
+        }
+        else if (obj.ApprovalStatus == 0)
+        {
+        <span class="text-success">Approved</span>
+        }
+        else
+        {
+        <span class="text-danger" style="color: red;">Rejected</span>
+        }
+        </td>
+        <td>
+        <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
+        </td>
+        </tr>
 
 
 
 
 
-                }
-            </tbody>
+        }
+        </tbody>
         </table>
-       
+        *@
         @*       </div>
         </div>
         </div> *@
-        
+
     </div>
 
 
-    <div class="preview-pane" id="featurePreviewPane" style="display: none";>
-        <!-- Feature details will be displayed here -->
+    <div class="details-and-comment">
+
+        <div class="preview-pane" id="featurePreviewPane" style="display: none">
+            <!-- Feature details will be displayed here -->
+        </div>
+        <div id="commentBoxContainer" class="comment-box" style="display: none">
+            <!-- This is where the comment box will be loaded -->
+        </div>
     </div>
 
 
- 
 </div>
