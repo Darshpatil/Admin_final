@@ -1,5 +1,5 @@
 ﻿using AdminDAL.Context;
-using AdminDAL.Entities;
+using AdminDAL.Entities2;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,9 +10,9 @@ namespace AdminDAL.Repositories
 {
     public class FeatureRepository : IFeatureRepository
     {
-        private readonly AdminContext _context;
+        private readonly AdminCont _context;
 
-        public FeatureRepository(AdminContext context)
+        public FeatureRepository(AdminCont context)
         {
             _context = context;
         }

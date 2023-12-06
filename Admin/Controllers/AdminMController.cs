@@ -1,12 +1,12 @@
 ﻿//using Admin.Data;
 //using Admin.Models;
-using AdminDAL.Entities;
+using AdminDAL.Entities2;
 using AdminDAL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AdminDAL.Context;
-using System.Linq;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http;
 using System.Text;
@@ -18,13 +18,13 @@ namespace Admin.Controllers
     public class AdminMController : Controller
     {
         private readonly IFeatureRepository _featureRepository;
-        private readonly AdminContext _db;
+        private readonly AdminCont _db;
         private List<PendingChangeModel> pendingChanges = new List<PendingChangeModel>();
 
 
 
 
-        public AdminMController(IFeatureRepository featureRepository, AdminContext db)
+        public AdminMController(IFeatureRepository featureRepository, AdminCont db)
         {
             _featureRepository = featureRepository;
             _db = db;
@@ -180,6 +180,7 @@ namespace Admin.Controllers
                                 // Assuming your Azure Function URL and payload format
                                 var functionUrl = "https://meshapp.azurewebsites.net";
 
+
                                 using (var client = new HttpClient())
                                 {
                                     var response = await client.GetAsync(functionUrl);
@@ -233,6 +234,19 @@ namespace Admin.Controllers
 
 
 
+        [HttpGet]
+        public IActionResult CommentBox(int featureId)
+        {
+            // Assuming _db is your database context and Feature is your model
+            var feature = _db.Features.FirstOrDefault(f => f.FeatureId == featureId);
+
+            if (feature == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_CommentBoxPartial", feature);
+        }
 
 
 

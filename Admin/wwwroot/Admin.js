@@ -18,14 +18,7 @@ function loadFeatureDetails(featureId) {
 }
 
 // Update the function that handles feature clicks to load details in the right section
-function openFeatureDetails(featureId) {
-    // Highlight the selected feature if needed
-    // Optionally, you can add a CSS class to highlight the selected feature in the features list
-    // Example: $(`.feature-row[data-feature-id="${featureId}"]`).addClass('selected');
 
-    // Load feature details in the right section
-    loadFeatureDetails(featureId);
-}
 
 function openFeatureDetailsModal(featureId) {
     fetch(`/AdminM/FeatureDetails?featureId=${featureId}`)
@@ -209,90 +202,87 @@ function updateStatus(featureId, newStatus) {
 
 function addChange(featureId, action, comment = '') {
     console.log('Pending Changes:', pendingChanges);
-    if (pendingChanges.length < 4) {
-        const existingChangeIndex = pendingChanges.findIndex(
-            (change) => change.featureId === featureId
-        );
 
-        if (existingChangeIndex !== -1) {
-            // Check if the action has changed
-            if (pendingChanges[existingChangeIndex].action !== action) {
-                // Update the existing change
-                pendingChanges[existingChangeIndex].action = action;
-                pendingChanges[existingChangeIndex].comment = comment;
-            }
-        } else {
-            // Add a new change
-            pendingChanges.push({ featureId, action, comment });
-        }
+    const existingChangeIndex = pendingChanges.findIndex(
+        (change) => change.featureId === featureId
+    );
 
-        // Update the pending changes preview in the modal without calling another function
-        var previewContent = '<h5>Changes Preview:</h5><ul>';
-        pendingChanges.forEach((change) => {
-            previewContent += `<li>${change.action} for feature ID ${change.featureId}</li>`;
-        });
-        previewContent += '</ul>';
-
-        var previewBody = document.getElementById('previewChangesBody');
-        if (previewBody) {
-            previewBody.innerHTML = previewContent;
+    if (existingChangeIndex !== -1) {
+        // Check if the action has changed
+        if (pendingChanges[existingChangeIndex].action !== action) {
+            // Update the existing change
+            pendingChanges[existingChangeIndex].action = action;
+            pendingChanges[existingChangeIndex].comment = comment;
         }
     } else {
-        // Show an alert indicating that no more changes can be added
-        alert('Maximum number of changes reached. Cannot add more.');
+        // Add a new change
+        pendingChanges.push({ featureId, action, comment });
+    }
 
-        // Redo the last change (remove the last entry)
-        pendingChanges.pop();
+    // Update the pending changes preview in the modal without calling another function
+    var previewContent = '<h5>Changes Preview:</h5><ul>';
+    pendingChanges.forEach((change) => {
+        previewContent += `<li>${change.action} for feature ID ${change.featureId}</li>`;
+    });
+    previewContent += '</ul>';
 
-        // Update the pending changes preview in the modal without calling another function
-        var previewContent = '<h5>Changes Preview:</h5><ul>';
-        pendingChanges.forEach((change) => {
-            previewContent += `<li>${change.action} for feature ID ${change.featureId}</li>`;
-        });
-        previewContent += '</ul>';
-
-        var previewBody = document.getElementById('previewChangesBody');
-        if (previewBody) {
-            previewBody.innerHTML = previewContent;
-        }
+    var previewBody = document.getElementById('previewChangesBody');
+    if (previewBody) {
+        previewBody.innerHTML = previewContent;
     }
 }
+
+/*document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (event) {
+        if (event.target.classList.contains('save-comment')) {
+            var featureId = event.target.getAttribute('data-feature-id');
+            saveComment(featureId);
+        } else if (event.target.classList.contains('cancel-comment')) {
+            closeCommentBox();
+        }
+    });
+});*/
+
+
+/*function showPreviewPane() {
+    const previewPane = document.getElementById('featurePreviewPane');
+    previewPane.style.display = 'block';
+}
+*/
+
+
+
 
 
 
 function saveComment(featureId) {
-    var featureId = document.getElementById("hiddenFeatureId").value;
-    var comment = document.getElementById("commentTextArea").value;
-    console.log(comment + "wed");
-    var confirmation = window.confirm("Are you sure you want to add this comment?");
-    if (confirmation) {
+    var commentTextArea = document.getElementById(`commentTextArea_${featureId}`);
+    var comment = commentTextArea.value.trim();
 
-
-
-        fetch(`/AdminM/UpdateComment?featureId=${featureId}&comment=${comment}`, {
+    if (comment !== '') {
+        fetch(`/AdminM/UpdateComment?featureId=${featureId}&comment=${encodeURIComponent(comment)}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-
             .then(response => {
                 if (response.ok) {
-                    // console.log('Comment accepted successfully');
-                    addChange(featureId, 'Comment', comment);
-                    $('#commentModal').modal('hide');
+                    console.log('Feature accepted successfully');
+                    addChange(featureId, 'Comment');
+                    alert("succesfully comment added");
+                    // Successfully saved comment, perform necessary actions here
                 } else {
-                    console.error('Failed to Comment feature');
+                    console.error('Failed to save comment');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
             });
-
-
-
     }
 }
+
+
 
 
 
@@ -486,13 +476,27 @@ function updateAllChanges() {
 
 
 
-
 function openCommentBox(featureId) {
     // Set the featureId in a hidden field to use in saveComment
     document.getElementById("hiddenFeatureId").value = featureId;
 
-    // Open the comment modal
-    $('#commentModal').modal('show');
+    // Display the comment box
+    var commentBox = document.getElementById('commentBox');
+    var commentTextArea = document.getElementById('commentTextArea');
+    var saveCommentButton = document.getElementById('saveCommentButton');
+    var cancelCommentButton = document.getElementById('cancelCommentButton');
+
+    // Update comment box content based on featureId or additional logic
+    // Assuming you're fetching or setting some content dynamically
+
+    // Show the comment box and its elements
+    commentBox.style.display = 'block';
+    commentTextArea.value = ''; // Clear the text area on opening
+    saveCommentButton.onclick = function () {
+        // Functionality to save the comment
+        saveComment(featureId);
+    };
+   
 }
 
 
@@ -507,10 +511,9 @@ function openCommentBox(featureId) {
 
 
 
-function closeCommentBox() {
-    // Assuming you have a function to hide the comment modal
-    $('#commentModal').modal('hide');
-}
+
+
+
 
 
 function downloadTableAsPDF() {

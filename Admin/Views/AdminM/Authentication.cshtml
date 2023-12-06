@@ -31,7 +31,7 @@
 </div>
 <br />
 <div class="card-footer">
-    <a onclick="ProceedVerify()" asp-controller="User" asp-action="Index" class="btn btn-primary">Verify</a>
+    <a onclick="ProceedVerify()" class="btn btn-primary">Verify</a>
 </div>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script type="text/javascript">
@@ -71,7 +71,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: 'https://localhost:7010/api/Authentication/login',
+                url: 'https://localhost:44303/api/Authentication/login-2FA',
                 data: JSON.stringify(_obj),
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",
@@ -79,7 +79,7 @@
                 success: function (data) {
                     if (data != null) {
                         localStorage.setItem('token', data.token);
-                        window.location.href = '/User'
+                        window.location.href = '/Adminm/Index'
                     }
 
                 },

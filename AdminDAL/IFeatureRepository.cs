@@ -1,5 +1,5 @@
-﻿using AdminDAL.Entities;
-using System.Collections.Generic;
+﻿using AdminDAL.Entities2;
+
 using System.Threading.Tasks;
 
 namespace AdminDAL

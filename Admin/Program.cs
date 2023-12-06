@@ -79,7 +79,7 @@ namespace Admin
 
 using AdminDAL;
 using AdminDAL.Context;
-using AdminDAL.Entities;
+using AdminDAL.Entities2;
 using AdminDAL.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -114,7 +114,7 @@ namespace Admin
 
             services.AddScoped<IFeatureRepository, FeatureRepository>();
 
-            services.AddDbContext<AdminContext>(options => options.UseSqlServer(constring));
+            services.AddDbContext<AdminCont>(options => options.UseSqlServer(constring));
         }
 
         private static void Configure(WebApplication app, IWebHostEnvironment env)

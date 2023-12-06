@@ -1,4 +1,4 @@
-﻿@model IEnumerable<AdminDAL.Entities.Feature>
+﻿@model IEnumerable<AdminDAL.Entities2.Feature>
 @{
     ViewData["Title"] = "Index";
 }
@@ -6,99 +6,121 @@
 
 
 @{
-    ViewData["Title"] = "Index";
+
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <style>
 
-
-    .split-view {
-        display: flex;
-        justify-content: space-between;
+   
+    .element-with-scroll {
+        overflow-y: scroll;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
     }
+
+    .element-with-scroll::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+    }
+
+    .feature-row {
+        /* Your styles for individual feature rows */
+        /* Example: */
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+    }
+
 
     .features-section {
-        flex: 1;
+        flex: 10; /* 80% width */
         padding: 20px;
-        width: 70%;
-    }
-
-    .feature-details-section {
-        flex-basis: 30%;
-        padding: 20px;
-        border-left: 1px solid #ccc;
-        overflow-y: auto; /* Add scroll for overflow content */
+        width: 90%;
+        height: 1000px; /* Sample height */
+        transition: transform 0.5s ease; /* Adding a transition effect */
+        /* Add vertical scrollbar if needed */
     }
 
 
-    
 
-    .feature-details-popup {
-        display: none;
+
+
+
+    .details-and-comment {
         position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: white;
-        padding: 20px;
-        border: 1px solid #ccc;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        width: 400px; /* Adjust the width as needed */
-        flex-direction: row;
-        align-items: center;
+        top: 73%;
+        left: 78%;
+        display: flex;
+        flex-direction: column;
+        width: calc(100% - 320px); /* Adjust width according to the preview pane and comment box width */
+        padding: 0; /* Reset padding */
+        margin: 0; /* Reset margin */
+        float: right;
     }
+    /* Include padding in width calculation
+                }
 
 
 
 
 
-    @@media (max-width: 576px) {
-        .remove-left-padding {
-            padding-left: 0;
-            margin-left: 0;
-            margin-right: 0;
-            margin-bottom: 0;
-        }
+            @@media (max-width: 576px) {
+                .remove-left-padding
 
-        #featuresTable {
-            margin-left: 0;
-            margin-right: 0;
-        }
+            {
+                padding-left: 0;
+                margin-left: 0;
+                margin-right: 0;
+                margin-bottom: 0;
+            }
 
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.8rem;
-        }
+            #featuresTable {
+                margin-left: 0;
+                margin-right: 0;
+            }
 
-        .table th, .table td {
-            padding: 0.3rem;
-        }
-    }
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
 
+            .table th, .table td {
+                padding: 0.3rem;
+            }
+
+            }
+            */
 
     .preview-pane {
-        width: 28%; /* Adjust as needed */
-        border: 1px solid #ccc; /* Border color */
-        background-color: #f8f9fa; /* Background color */
-        padding: 10px; /* Padding for content */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
-        height:30%;
-     
-     
+        /* Your styles for the preview pane */
+        position: fixed;
+        top: 50px; /* Adjust as needed */
+        right: 20px; /* Adjust as needed */
+        width: 300px; /* Adjust width as needed */
+        height: 65%; /* Adjust height as needed */
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        padding: 10px;
+        overflow-y: auto; /* Enable vertical scroll if needed */
+        display: none; /* Initially hide the preview pane */
+        overflow: hidden;
     }
 
 
 
-    .feature-row:hover {
+    .comment-box {
+        border-top: 1px solid #ccc;
+        width: 300px; /* Adjust width as needed */
+        float: right;
+        margin-top: -1px; /* Adjust margin as needed to align properly with preview-pane */
+    }
 
+    .feature-row:hover {
         background-color: #f8f9fa;
-        
-        /* Lighter background color on hover */ 
+        /* Lighter background color on hover */
         color: #007bff; /* Change text color on hover */
-        transform: scale(1.02); /* Add a slight scale effect on hover */
+        transform: scale(1.002); /* Add a slight scale effect on hover */
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow on hover */
-        transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s; /* Add smooth transition */
+        transition: background-color 0.1s, color 0.1s, transform 0.1s, box-shadow 0.1s; /* Add smooth transition */
     }
 </style>
 <script src="~/Admin.js"></script>
@@ -110,42 +132,55 @@
 
 <script>
 
-  function loadFeatureDetails(featureId) {
-    // Get the preview pane element
-    const previewPane = document.getElementById('featurePreviewPane');
+    function loadFeatureDetails(featureId) {
+        const previewPane = document.getElementById('featurePreviewPane');
+        const commentBoxContainer = document.getElementById('commentBoxContainer');
+        var section = document.querySelector('.features-section');
+        section.style.transform = 'translateX(-10%)'; // Move the section to the
+        // Function to load comment box content
+        function loadCommentBox(featureId) {
+            fetch(`/AdminM/CommentBox?featureId=${featureId}`)
+                .then(response => response.text())
+                .then(commentBoxData => {
+                    commentBoxContainer.innerHTML = commentBoxData;
+                    commentBoxContainer.style.display = 'block'; // Display the comment box after loading its content
 
-    // Check if the preview pane is currently visible
-    const isVisible = window.getComputedStyle(previewPane).display !== 'none';
+                    // Optionally show the comment box if needed based on your UI logic
+                })
+                .catch(error => {
+                    console.error('There was a problem loading the comment box:', error);
+                });
+        }
 
-    // If visible, hide the preview pane
-    if (isVisible) {
-        previewPane.style.display = 'none';
-    } else {
-        // If not visible, fetch and show the feature details
+        // Load feature details
         fetch(`/AdminM/FeatureDetails?featureId=${featureId}`)
             .then(response => response.text())
-            .then(data => {
-                // Update the content of the preview pane
-                previewPane.innerHTML = data;
-
-                // Show the preview pane
+            .then(featureData => {
+                previewPane.innerHTML = featureData;
                 previewPane.style.display = 'block';
+
+                // Load the comment box after loading the feature details
+                loadCommentBox(featureId);
             })
             .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
+                console.error('There was a problem loading the feature details:', error);
             });
     }
-}
 
 
-    // Update the function that handles feature clicks to load details in the right section
-    function openFeatureDetails(featureId) {
-        // Highlight the selected feature if needed
-        // Optionally, you can add a CSS class to highlight the selected feature in the features list
-        // Example: $(`.feature-row[data-feature-id="${featureId}"]`).addClass('selected');
+    function closeCommentBox() {
+        const commentBoxContainer = document.getElementById('commentBoxContainer');
+        const featurePreviewPane = document.getElementById('featurePreviewPane');
+        var section = document.querySelector('.features-section');
+        // Hide the comment box container and feature preview pane
+        if (commentBoxContainer) {
+            commentBoxContainer.style.display = 'none';
+        }
+        if (featurePreviewPane) {
+            featurePreviewPane.style.display = 'none';
 
-        // Load feature details in the right section
-        loadFeatureDetails(featureId);
+            section.style.transform = 'translateX(0%)';
+        }
     }
 </script>
 
@@ -281,7 +316,7 @@
     <!-- Left section for Features -->
     <div class="features-section">
         @* <div id="featurePreviewPane">
-            <!-- Feature details will be displayed here -->
+        <!-- Feature details will be displayed here -->
         </div> *@
         @*   <div id="featuresContainer">
         <div class="container remove-left-padding">
@@ -320,7 +355,7 @@
                         </button>
                     </th>
                     <th>
-                        User Id
+                        User Name
                         <button type="button" class="btn btn-sm" onclick="sortColumn(4)">
                             <i id="sortIcon4" class="fas fa-sort"></i>
                         </button>
@@ -331,10 +366,10 @@
                             <i id="sortIcon5" class="fas fa-sort"></i>
                         </button>
                     </th>
-                    <th>
-                        Comment
+                    @*  <th>
+                    Comment
 
-                    </th>
+                    </th> *@
                 </tr>
             </thead>
             <tbody>
@@ -362,7 +397,7 @@
                             @obj.Value
                         </td>
                         <td onclick="loadFeatureDetails(@obj.FeatureId)">
-                            @obj.UserId
+                            @obj.UserName
                         </td>
                         <td width="20%" class="text-center">
                             @if (obj.ApprovalStatus == 2)
@@ -382,9 +417,9 @@
                                 <span class="text-danger" style="color: red;">Rejected</span>
                             }
                         </td>
-                        <td>
-                            <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
-                        </td>
+                        @* <td>
+                    <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
+                    </td> *@
                     </tr>
 
 
@@ -394,18 +429,23 @@
                 }
             </tbody>
         </table>
-       
+
         @*       </div>
         </div>
         </div> *@
-        
+
     </div>
 
 
-    <div class="preview-pane" id="featurePreviewPane" style="display: none";>
-        <!-- Feature details will be displayed here -->
+    <div class="details-and-comment">
+
+        <div class="preview-pane" id="featurePreviewPane" style="display: none">
+            <!-- Feature details will be displayed here -->
+        </div>
+        <div id="commentBoxContainer" class="comment-box" style="display: none">
+            <!-- This is where the comment box will be loaded -->
+        </div>
     </div>
 
 
- 
 </div>
