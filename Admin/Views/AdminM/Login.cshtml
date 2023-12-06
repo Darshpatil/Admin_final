@@ -1,0 +1,53 @@
+﻿<!-- Login.cshtml -->
+@{
+    Layout = "_LoginLayout";
+}
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 110px 0px 0px 0px;
+    }
+
+    h2 {
+        align-content: center;
+    }
+
+    .form-group {
+        margin-bottom: 15px; /* Adjust the value as needed */
+    }
+
+
+    .admin-text {
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 10px; /* Adjust the value as needed */
+        font-size: 24px; /* Adjust the font size as needed */
+        font-weight: bold; /* Make the text bold */
+    }
+</style>
+
+<div class="admin-text">Feature Mesh Admin Page</div>
+
+<div class="d-flex align-items-center justify-content-center h-100">
+    <div class="col-md-6">
+        <h2 class="text-center">Login</h2>
+
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" required /> <!-- Added 'required' attribute -->
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" required /> <!-- Added 'required' attribute -->
+        </div>
+
+        <div class="text-center">
+            <a asp-controller="AdminM" asp-action="Index">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </a>
+        </div>
+    </div>
+</div>

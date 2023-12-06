@@ -1,0 +1,92 @@
+﻿<link rel="stylesheet" href="~/css/AuthenticationStyleSheet.css" />
+
+<h5>Verification code has been sent to the registered Email</h5>
+<div class="card">
+    @* <div class="card-header">
+    <h2>User Verification</h2>
+    </div> *@
+    <div class="card-body">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input class="form-control" id="txtusername" />
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-group">
+                    <label>OTP</label>
+                    <input type="password" class="form-control" id="txtotp" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+    @* <div class="card-footer">
+    <a onclick="ProceedVerify()" asp-controller="User" asp-action="Index" class="btn btn-primary">Verify</a>
+    </div> *@
+
+
+</div>
+<br />
+<div class="card-footer">
+    <a onclick="ProceedVerify()" asp-controller="User" asp-action="Index" class="btn btn-primary">Verify</a>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript">
+
+    var js = jQuery.noConflict(true);
+
+
+    function ProceedVerify() {
+
+        var isproceed = true;
+
+        var _user = $('#txtusername');
+        var _otp = $('#txtotp');
+
+
+        var user = _user.val();
+        var otp = _otp.val();
+
+        if (user == null || user == '') {
+            _user.css('border-color', 'red');
+            isproceed = false;
+        } else {
+            _user.css('border-color', '#ccc');
+        }
+        if (otp == null || otp == '') {
+            _otp.css('border-color', 'red');
+            isproceed = false;
+        } else {
+            _otp.css('border-color', '#ccc');
+        }
+        if (isproceed) {
+
+            var _obj = new Object();
+            _obj.username = user;
+            _obj.code = otp;
+
+
+            $.ajax({
+                type: 'POST',
+                url: 'https://localhost:7010/api/Authentication/login',
+                data: JSON.stringify(_obj),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    if (data != null) {
+                        localStorage.setItem('token', data.token);
+                        window.location.href = '/User'
+                    }
+
+                },
+                failure: function (error) {
+
+                }
+            })
+        }
+    }
+</script>

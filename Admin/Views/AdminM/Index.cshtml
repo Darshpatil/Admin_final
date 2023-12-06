@@ -1,0 +1,316 @@
+﻿@model IEnumerable<AdminDAL.Entities.Feature>
+@{
+    ViewData["Title"] = "Index";
+}
+@* ///new commit *@
+
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .feature-details-popup {
+        display: none;
+        position: fixed;
+
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        padding: 20px;
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 400px; /* Adjust the width as needed */
+        flex-direction: row;
+        align-items: center;
+    }
+
+
+
+
+
+    @@media (max-width: 576px) {
+        .remove-left-padding {
+            padding-left: 0;
+            margin-left: 0;
+            margin-right: 0;
+            margin-bottom: 0;
+        }
+
+        #featuresTable {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .table th, .table td {
+            padding: 0.3rem;
+        }
+    }
+
+
+
+
+
+
+    .feature-row:hover {
+        background-color: #f8f9fa; /* Lighter background color on hover */
+        color: #007bff; /* Change text color on hover */
+        transform: scale(1.02); /* Add a slight scale effect on hover */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow on hover */
+        transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s; /* Add smooth transition */
+    }
+</style>
+<script src="~/Admin.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<!-- Include html2pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+
+
+<!-- Modal for displaying changes preview -->
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Preview Changes</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="previewChangesBody">
+                <!-- Preview content will be displayed here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="clearAllChangesButton">
+                    Clear All
+                </button>
+                <button type="button" class="btn btn-secondary" id="cancelUpdateButton">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmUpdateButton">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="modal fade" id="featureDetailsModal" tabindex="-1" role="dialog" aria-labelledby="featureDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-body" id="featureDetailsModalContent">
+                <!-- Feature details will be loaded here -->
+            </div>
+            <div class="modal-footer" onclick="closeFeatureDetailsModal()">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature details popup -->
+<div id="featureDetailsPopup" class="feature-details-popup" onclick="closeFeatureDetailsPopup()">
+    <div id="featureDetailsPopupContent"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="modal fade" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="commentModalLabel">Add Comment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="commentTextArea">Comment:</label>
+                <textarea id="commentTextArea" class="form-control"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="window.location.href=window.location.href;">
+                    Close
+                </button>
+                @foreach (var obj in Model)
+                {
+                    <button type="button" class="btn btn-primary" onclick="saveComment(@obj.FeatureId)">Save Comment</button>
+                    break;
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<input type="hidden" id="hiddenFeatureId" />
+
+<div class="container p-3 scrollable-table">
+    <div class="row pt-4">
+        <div class="col-4">
+            <h2 class="text-primary">Features list</h2>
+        </div>
+        <div class="col-4 text-center">
+            <button type="button" class="btn btn-primary" onclick="updateAllChanges()">Update All</button>
+        </div>
+        <div class="col-4 text-end">
+            <button type="button" class="btn btn-primary float-right" onclick="downloadTableAsPDF()">Download PDF</button>
+        </div>
+
+        <br />
+    </div>
+    <br />
+</div>
+
+
+
+<div id="featuresContainer">
+<div  class="container remove-left-padding">
+    <div class="row">
+        <div class="col-12">
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+            <table class="table table-bordered table-striped text-center remove-left-padding" id="featuresTable">
+                <thead>
+                    <tr>
+
+
+                        <th>
+                            Entity Name
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(0)">
+                                <i id="sortIcon0" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Feature Id
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(1)">
+                                <i id="sortIcon1" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Feature Name
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(2)">
+                                <i id="sortIcon2" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Value
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(3)">
+                                <i id="sortIcon3" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            User Id
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(4)">
+                                <i id="sortIcon4" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Approval status
+                            <button type="button" class="btn btn-sm" onclick="sortColumn(5)">
+                                <i id="sortIcon5" class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th>
+                            Comment
+
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var obj in Model)
+                    {
+                        <tr class="feature-row" data-feature-id="@obj.FeatureId">
+                            <td onclick="openFeatureDetailsModal(@obj.FeatureId)">
+                                @if (obj.EntityName != null)
+                                {
+                                    @obj.EntityName
+                                }
+                                else
+                                {
+                                    <span>Entity Not Found</span>
+                                }
+                            </td>
+                            <td onclick="openFeatureDetailsModal(@obj.FeatureId)">
+                                @obj.FeatureId
+                            </td>
+                            <td onclick="openFeatureDetailsModal(@obj.FeatureId)">
+                                @obj.FeatureName
+                            </td>
+                            <td onclick="openFeatureDetailsModal(@obj.FeatureId)">
+                                @obj.Value
+                            </td>
+                            <td onclick="openFeatureDetailsModal(@obj.FeatureId)">
+                                @obj.UserId
+                            </td>
+                            <td width="20% class="text-center">
+                                @if (obj.ApprovalStatus == 2)
+                                {
+                                    <div class="col-12 text-center">
+                                            <button type="button" class="btn btn-success btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="acceptFeature(@obj.FeatureId)">Accept</button>
+                                            <button type="button" class="btn btn-danger btn-sm m-1" data-feature-id="@obj.FeatureId" onclick="rejectFeature(@obj.FeatureId)">Reject</button>
+
+                                    </div>
+                                }
+                                else if (obj.ApprovalStatus == 0)
+                                {
+                                    <span class="text-success">Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger" style="color: red;">Rejected</span>
+                                }
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-info" onclick="openCommentBox(@obj.FeatureId)">Comment</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>

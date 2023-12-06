@@ -1,0 +1,97 @@
+﻿<style type="text/css">
+    .card {
+        width: 40%;
+        margin-left: 0%;
+        margin-top: 5%
+    }
+</style>
+
+<div class="card" id="card1" style="display:flex">
+    <div class="card-header">
+        <h2>User Login</h2>
+    </div>
+    <div class="card-body">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input class="form-control" id="txtusername" />
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="txtpwd" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="card-footer">
+        <a onclick="ProceedLogin()" class="btn btn-primary">Login</a>
+    </div>
+   
+</div>
+
+<div id="loadingSpinner" style="display:none">
+    <img src="css/loadinggif.gif" alt="Updating ..." />
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript">
+
+    function ProceedLogin() {
+        var _user = $('#txtusername');
+        var _pwd = $('#txtpwd');
+
+        var user = _user.val();
+        var pwd = _pwd.val();
+
+        if (!user || !pwd) {
+            _user.css('border-color', 'red');
+            _pwd.css('border-color', 'red');
+            return; // Do not proceed if username or password is empty
+        }
+
+        var _obj = {
+            Username: user,
+            Password: pwd
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: 'http://localhost:5010/api/Authentication/login',
+            data: JSON.stringify(_obj),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            beforeSend: function () {
+                // Show the loading spinner when the request is sent
+                $('#loadingSpinner').show();
+              
+            },
+            success: function (data) {
+                if (data && data.status === "Success") {
+                    localStorage.setItem('token', data.token);
+                    // Redirect to a different view for successful login
+                    window.location.href = 'AdminM/Authentication';
+                } else {
+                    // Stay on the same page for unsuccessful login
+                    alert("Login failed. Please check your credentials.");
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                // Display error message on the page
+                alert("An error occurred: " + errorThrown);
+                console.error('Error:', errorThrown);
+            },
+            complete: function () {
+                // Hide the loading spinner when the request is complete (whether success or failure)
+                $('#loadingSpinner').hide();
+                
+            }
+        });
+    }
+</script>
